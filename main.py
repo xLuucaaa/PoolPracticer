@@ -20,8 +20,8 @@ pygame.display.set_caption("Pool Practier")
 
 #pymunk space
 space = pymunk.Space()
-#Horizontal and vertical gravity of the whole game
-space.gravity = (0, 5000) 
+#so that friction is applied
+static_body = space.static_body
 #to tell pymunk to draw the shapes that we created, otherwise it is not getting displayed 
 draw_options = pymunk.pygame_util.DrawOptions(screen)
 
@@ -46,12 +46,22 @@ def create_ball(radius, position):
     shape = pymunk.Circle(body, radius)
     #unitless value: experiment with is, to find the right mass
     shape.mass = 5
+    #use pivot joint to add friction
+    pivot = pymunk.PivotJoint(static_body, body, (0,0), (0,0))
+    #diable joint correction 
+    pivot.max_bias = 0  
+    #emulate linear friction
+    pivot.max_force = 1000
 
     space.add(body)
     space.add(shape)
+    space.add(pivot)
     return shape
 
-newBall = create_ball(25, (300, 100))
+new_ball = create_ball(25, (300, 300))
+
+
+cue_ball = create_ball(25, (600, 320))
 
 #########################################################  /Functions   ######################################################################
 
@@ -71,6 +81,11 @@ while run == True:
     screen.fill(background_color)
 
     for event in pygame.event.get():
+        #event when mouseclick, that the cueball (white) is moving
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            #apply_impulse is a pymunk func....   imp x, y of white  | x, y coordinates relative to center of body 
+            cue_ball.body.apply_impulse_at_local_point((-1000, 0), (0, 0))
+
         #pygame.QUIT is the X on the top right screen (^= closing the screen)
         if event.type == pygame.QUIT:
             run = False
