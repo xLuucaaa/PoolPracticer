@@ -29,7 +29,8 @@ draw_options = pymunk.pygame_util.DrawOptions(screen)
 clock = pygame.time.Clock()
 FPS = 120
 
-
+#colors
+background_color = (50, 50, 50)
 
 
 #########################################################  /Game-Setup   ######################################################################
@@ -65,6 +66,9 @@ while run == True:
     clock.tick(FPS)
     #physicswise: time that should ellapse between each frame - physics ^= clock ticks
     space.step(1 / FPS)
+
+    #fill background 
+    screen.fill(background_color)
 
     for event in pygame.event.get():
         #pygame.QUIT is the X on the top right screen (^= closing the screen)
