@@ -1,9 +1,12 @@
+#########################################################  Libraries   ######################################################################
 import pygame
 import pymunk
 #to link the 2 libraries 
 import pymunk.pygame_util
+######################################################### /Libraries   ######################################################################
 
 
+#########################################################  Game-Setup   ######################################################################
 #initialize the pygame (modules, environment)
 pygame.init()
 
@@ -15,12 +18,25 @@ SCREEN_HEIGHT = 678
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Pool Practier")
 
-
 #pymunk space
 space = pymunk.Space()
+#Horizontal and vertical gravity of the whole game
+space.gravity = (0, 5000) 
 #to tell pymunk to draw the shapes that we created, otherwise it is not getting displayed 
 draw_options = pymunk.pygame_util.DrawOptions(screen)
 
+#clock (time to update the screen) - update the screen 120 times per second
+clock = pygame.time.Clock()
+FPS = 120
+
+
+
+
+#########################################################  /Game-Setup   ######################################################################
+
+
+
+#########################################################  Functions   ######################################################################
 #function for creating balls 
 #pymunk objects consist of body and shape (body is the center, shape is the surrounding)
 def create_ball(radius, position):
@@ -36,12 +52,20 @@ def create_ball(radius, position):
 
 newBall = create_ball(25, (300, 100))
 
+#########################################################  /Functions   ######################################################################
 
 
 
+
+#########################################################  MAIN LOOP GAME   ######################################################################
 #game loop, so the screen stays displayed 
 run = True
 while run == True: 
+
+    clock.tick(FPS)
+    #physicswise: time that should ellapse between each frame - physics ^= clock ticks
+    space.step(1 / FPS)
+
     for event in pygame.event.get():
         #pygame.QUIT is the X on the top right screen (^= closing the screen)
         if event.type == pygame.QUIT:
@@ -51,3 +75,4 @@ while run == True:
     pygame.display.update()
 
 pygame.quit()
+#########################################################  /MAIN LOOP GAME   ######################################################################
