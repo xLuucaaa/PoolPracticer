@@ -49,6 +49,8 @@ def create_ball(radius, position):
     shape = pymunk.Circle(body, radius)
     #unitless value: experiment with is, to find the right mass
     shape.mass = 5
+    #for bouncing back 
+    shape.elasticity = 0.8
     #PivotJoint to allow 2 bodies to rotate around a common point: friction between poolball and pooltable 
                             #body a         b     anch    anch
     pivot = pymunk.PivotJoint(static_body, body, (0,0), (0,0))
@@ -68,7 +70,12 @@ cue_ball = create_ball(25, (600, 320))
 
 #create one pool table cushion 
 cushions = [
-    [(88, 56), (109, 77), (555, 77), (564, 56)]
+  [(88, 56), (109, 77), (555, 77), (564, 56)],
+  [(621, 56), (630, 77), (1081, 77), (1102, 56)],
+  [(89, 621), (110, 600),(556, 600), (564, 621)],
+  [(622, 621), (630, 600), (1081, 600), (1102, 621)],
+  [(56, 96), (77, 117), (77, 560), (56, 581)],
+  [(1143, 96), (1122, 117), (1122, 560), (1143, 581)]
 ]
 
 #function for creating curshions (take the parameters (diameters of cushion))
@@ -77,7 +84,8 @@ def create_cushion(poly_dims):
     body = pymunk.Body(body_type = pymunk.Body.STATIC)
     body.position = (0, 0)
     shape = pymunk.Poly(body, poly_dims)
-
+    #for bouncing back
+    shape.elasticity = 0.8
     space.add(body)
     space.add(shape)
 
