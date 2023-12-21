@@ -32,6 +32,9 @@ FPS = 120
 #colors
 background_color = (50, 50, 50)
 
+#load images (.convert_alpha to make it look smoother)
+table_image = pygame.image.load("images/table.png").convert_alpha()
+
 
 #########################################################  /Game-Setup   ######################################################################
 
@@ -61,8 +64,25 @@ def create_ball(radius, position):
 
 new_ball = create_ball(25, (300, 300))
 
-
 cue_ball = create_ball(25, (600, 320))
+
+#create one pool table cushion 
+cushions = [
+    [(88, 56), (109, 77), (555, 77), (564, 56)]
+]
+
+#function for creating curshions (take the parameters (diameters of cushion))
+def create_cushion(poly_dims):
+    #static, because the cushions are fixed and do not move around
+    body = pymunk.Body(body_type = pymunk.Body.STATIC)
+    body.position = (0, 0)
+    shape = pymunk.Poly(body, poly_dims)
+
+    space.add(body)
+    space.add(shape)
+
+for c in cushions:
+    create_cushion(c)
 
 #########################################################  /Functions   ######################################################################
 
@@ -80,6 +100,9 @@ while run == True:
 
     #fill background 
     screen.fill(background_color)
+
+    #draw pool table 
+    screen.blit(table_image, (0,0))
 
     for event in pygame.event.get():
         #event when mouseclick, that the cueball (white) is moving
