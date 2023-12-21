@@ -20,7 +20,7 @@ pygame.display.set_caption("Pool Practier")
 
 #pymunk space
 space = pymunk.Space()
-#so that friction is applied
+#static body doesnt move/act to forces applied to it (is applied on the screen, so it never moves (represents the table))
 static_body = space.static_body
 #to tell pymunk to draw the shapes that we created, otherwise it is not getting displayed 
 draw_options = pymunk.pygame_util.DrawOptions(screen)
@@ -46,7 +46,8 @@ def create_ball(radius, position):
     shape = pymunk.Circle(body, radius)
     #unitless value: experiment with is, to find the right mass
     shape.mass = 5
-    #use pivot joint to add friction
+    #PivotJoint to allow 2 bodies to rotate around a common point: friction between poolball and pooltable 
+                            #body a         b     anch    anch
     pivot = pymunk.PivotJoint(static_body, body, (0,0), (0,0))
     #diable joint correction 
     pivot.max_bias = 0  
