@@ -16,7 +16,7 @@ SCREEN_HEIGHT = 678
 
 #create a game window for displaying graphics 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Pool Practier")
+pygame.display.set_caption("Pool Practicer")
 
 #pymunk space
 space = pymunk.Space()
@@ -29,11 +29,19 @@ draw_options = pymunk.pygame_util.DrawOptions(screen)
 clock = pygame.time.Clock()
 FPS = 120
 
+#game variables 
+diameter = 36
+
 #colors
 background_color = (50, 50, 50)
 
 #load images (.convert_alpha to make it look smoother)
 table_image = pygame.image.load("images/table.png").convert_alpha()
+ball_images = []
+for i in range(1, 17):
+    # f works as a instring replacement 
+    ball_image = pygame.image.load(f"images/ball_{i}.png").convert_alpha()
+    ball_images.append(ball_image)
 
 
 #########################################################  /Game-Setup   ######################################################################
@@ -64,11 +72,23 @@ def create_ball(radius, position):
     space.add(pivot)
     return shape
 
-new_ball = create_ball(25, (300, 300))
+#setup game balls
+balls = []
+rows = 5
+#potting balls
+for col in range(5):
+    for row in range(rows):
+        pos = (250 + (col * (diameter+1)), 267 + (row * (diameter+1)) + (col * diameter / 2))
+        new_ball = create_ball(diameter/2, pos)
+        balls.append(new_ball)
+    rows -= 1
+#cue ball 
+pos = (888, SCREEN_HEIGHT / 2)
+cue_ball = create_ball(diameter / 2, pos)
+balls.append(cue_ball)
 
-cue_ball = create_ball(25, (600, 320))
 
-#create one pool table cushion 
+#points that represent the corners of the cushions of the pool table
 cushions = [
   [(88, 56), (109, 77), (555, 77), (564, 56)],
   [(621, 56), (630, 77), (1081, 77), (1102, 56)],
@@ -112,17 +132,21 @@ while run == True:
     #draw pool table 
     screen.blit(table_image, (0,0))
 
+    #draw pool balls 
+    for i, ball in enumerate(balls):
+        screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
+
     for event in pygame.event.get():
         #event when mouseclick, that the cueball (white) is moving
         if event.type == pygame.MOUSEBUTTONDOWN:
             #apply_impulse is a pymunk func....   imp x, y of white  | x, y coordinates relative to center of body 
-            cue_ball.body.apply_impulse_at_local_point((-1000, 0), (0, 0))
+            cue_ball.body.apply_impulse_at_local_point((-4000, 0), (0, 0))
 
         #pygame.QUIT is the X on the top right screen (^= closing the screen)
         if event.type == pygame.QUIT:
             run = False
     
-    space.debug_draw(draw_options)
+    #space.debug_draw(draw_options)
     pygame.display.update()
 
 pygame.quit()
