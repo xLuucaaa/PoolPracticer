@@ -1,5 +1,6 @@
 #########################################################  Libraries   ######################################################################
 import pygame
+import math
 import pymunk
 #to link the 2 libraries 
 import pymunk.pygame_util
@@ -36,6 +37,7 @@ diameter = 36
 background_color = (50, 50, 50)
 
 #load images (.convert_alpha to make it look smoother)
+cue_image = pygame.image.load("images/cue.png").convert_alpha()
 table_image = pygame.image.load("images/table.png").convert_alpha()
 ball_images = []
 for i in range(1, 17):
@@ -112,6 +114,28 @@ def create_cushion(poly_dims):
 for c in cushions:
     create_cushion(c)
 
+
+#create pool cue 
+class Cue():
+    def __init__(self, pos):
+        self.original_image = cue_image
+        self.angle = 0
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+    
+    def update(self, angle):
+        self.angle = angle
+
+    def draw(self, surface):
+        self.image = pygame.transform.rotate(self.original_image, self.angle)
+        surface.blit(self.image, 
+            (self.rect.centerx - self.image.get_width() / 2,
+            self.rect.centery - self.image.get_height() / 2))
+
+#balls[-1] to get the last item of the list (which is the cue ball)
+cue = Cue(balls[-1].body.position)
+
 #########################################################  /Functions   ######################################################################
 
 
@@ -132,9 +156,21 @@ while run == True:
     #draw pool table 
     screen.blit(table_image, (0,0))
 
-    #draw pool balls 
+    #draw pool balls (enumerate function can be used to also count the indexes)
     for i, ball in enumerate(balls):
+                                    #position needed to be adapted: differences between pymunk and pygame
         screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
+
+    #draw pool cue 
+    #calculate pool cue angle 
+    mouse_pos = pygame.mouse.get_pos()
+    cue.rect.center = balls[-1].body.position
+    x_dist = balls[-1].body.position[0] - mouse_pos[0]
+    #y coordinate is flipped in pygame: invert it to make + to up 
+    y_dist = -(balls[-1].body.position[1] - mouse_pos[1])
+    cue_angle = math.degrees(math.atan2(y_dist, x_dist))
+    cue.update(cue_angle)
+    cue.draw(screen)
 
     for event in pygame.event.get():
         #event when mouseclick, that the cueball (white) is moving
