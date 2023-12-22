@@ -32,9 +32,15 @@ FPS = 120
 
 #game variables 
 diameter = 36
+force = 0
+max_force = 13000
+force_direction = 1
+taking_shot = True
+powering_up = False
 
 #colors
 background_color = (50, 50, 50)
+red_color = (255, 0, 0)
 
 #load images (.convert_alpha to make it look smoother)
 cue_image = pygame.image.load("images/cue.png").convert_alpha()
@@ -136,6 +142,12 @@ class Cue():
 #balls[-1] to get the last item of the list (which is the cue ball)
 cue = Cue(balls[-1].body.position)
 
+
+#create powerbars to show how hard the cue ball will the hit
+power_bar = pygame.Surface((10, 20))
+power_bar.fill(red_color)
+
+
 #########################################################  /Functions   ######################################################################
 
 
@@ -161,22 +173,54 @@ while run == True:
                                     #position needed to be adapted: differences between pymunk and pygame
         screen.blit(ball_images[i], (ball.body.position[0] - ball.radius, ball.body.position[1] - ball.radius))
 
+    #check if all the balls have stopped moving 
+    taking_shot = True
+    for ball in balls: 
+        #make it integer to think about bugs: ball could move v=0.000001 m/s
+        if int(ball.body.velocity[0]) != 0 or int(ball.body.velocity[1]) != 0:
+            taking_shot = False
+
+
     #draw pool cue 
     #calculate pool cue angle 
-    mouse_pos = pygame.mouse.get_pos()
-    cue.rect.center = balls[-1].body.position
-    x_dist = balls[-1].body.position[0] - mouse_pos[0]
-    #y coordinate is flipped in pygame: invert it to make + to up 
-    y_dist = -(balls[-1].body.position[1] - mouse_pos[1])
-    cue_angle = math.degrees(math.atan2(y_dist, x_dist))
-    cue.update(cue_angle)
-    cue.draw(screen)
+    if taking_shot == True: 
+        mouse_pos = pygame.mouse.get_pos()
+        #center of the cue is set to the position of the cue ball 
+        cue.rect.center = balls[-1].body.position
+        x_dist = balls[-1].body.position[0] - mouse_pos[0]
+        #y coordinate is flipped in pygame: invert it to make + to up 
+        y_dist = -(balls[-1].body.position[1] - mouse_pos[1])
+        #define the angle between the cue and the cue ball 
+        cue_angle = math.degrees(math.atan2(y_dist, x_dist))
+        cue.update(cue_angle)
+        cue.draw(screen)
+
+    #power up pool cue 
+    if powering_up == True:
+        force += 100 * force_direction
+        if force >= max_force or force <= 0:
+            force_direction *= -1
+        #draw powerbars 
+        for bar in range(math.ceil(force / 2000)):
+            screen.blit(power_bar, (balls[-1].body.position[0] - 30 + (bar * 15), 
+                        balls[-1].body.position[1] + 30))
+            
+    elif powering_up == False and taking_shot == True:
+        x_impulse = math.cos(math.radians(cue_angle))
+        y_impulse = math.sin(math.radians(cue_angle))
+        #apply_impulse is a pymunk func....   imp x, y of white  | x, y coordinates relative to center of body 
+        balls[-1].body.apply_impulse_at_local_point((force * -x_impulse, force * y_impulse), (0, 0))  
+        #reset the force 
+        force = 0  
+        force_direction = 1
 
     for event in pygame.event.get():
         #event when mouseclick, that the cueball (white) is moving
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            #apply_impulse is a pymunk func....   imp x, y of white  | x, y coordinates relative to center of body 
-            cue_ball.body.apply_impulse_at_local_point((-4000, 0), (0, 0))
+        if event.type == pygame.MOUSEBUTTONDOWN and taking_shot == True:
+            powering_up = True
+        if event.type == pygame.MOUSEBUTTONUP and taking_shot == True:
+            powering_up = False
+         
 
         #pygame.QUIT is the X on the top right screen (^= closing the screen)
         if event.type == pygame.QUIT:
