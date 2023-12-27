@@ -47,7 +47,7 @@ game_running = True
 
 #colors
 background_color = (50, 50, 50)
-red_color = (255, 0, 0)
+green_color = (0, 255, 0)
 white_color = (255, 255, 255)
 
 #fonts 
@@ -175,7 +175,7 @@ cue = Cue(balls[-1].body.position)
 
 #create powerbars to show how hard the cue ball will the hit
 power_bar = pygame.Surface((10, 20))
-power_bar.fill(red_color)
+power_bar.fill(green_color)
 
 
 #########################################################  /Functions   ######################################################################
