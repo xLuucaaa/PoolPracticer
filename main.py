@@ -14,9 +14,10 @@ pygame.init()
 #sizes of the game 
 SCREEN_WIDTH = 1200 
 SCREEN_HEIGHT = 678
+BOTTOM_PANEL = 50
 
 #create a game window for displaying graphics 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT + BOTTOM_PANEL))
 pygame.display.set_caption("Pool Practicer")
 
 #pymunk space
@@ -31,16 +32,29 @@ clock = pygame.time.Clock()
 FPS = 120
 
 #game variables 
+lives = 3
 diameter = 36
+pocket_diameter = 66
 force = 0
 max_force = 13000
 force_direction = 1
 taking_shot = True
 powering_up = False
+cue_ball_potted = False
+potted_balls = []
+game_running = True
+
 
 #colors
 background_color = (50, 50, 50)
 red_color = (255, 0, 0)
+white_color = (255, 255, 255)
+
+#fonts 
+font = pygame.font.SysFont("Lato", 40)
+
+large_font = pygame.font.SysFont("Lato", 60)
+
 
 #load images (.convert_alpha to make it look smoother)
 cue_image = pygame.image.load("images/cue.png").convert_alpha()
@@ -57,6 +71,13 @@ for i in range(1, 17):
 
 
 #########################################################  Functions   ######################################################################
+
+#function for outputting text onto the screen 
+def draw_text(text, font, text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x, y))
+
+
 #function for creating balls 
 #pymunk objects consist of body and shape (body is the center, shape is the surrounding)
 def create_ball(radius, position):
@@ -95,6 +116,15 @@ pos = (888, SCREEN_HEIGHT / 2)
 cue_ball = create_ball(diameter / 2, pos)
 balls.append(cue_ball)
 
+#create 6 pockets on the table
+pockets = [
+  (55, 63),
+  (592, 48),
+  (1134, 64),
+  (55, 616),
+  (592, 629),
+  (1134, 616)
+]
 
 #points that represent the corners of the cushions of the pool table
 cushions = [
@@ -168,6 +198,31 @@ while run == True:
     #draw pool table 
     screen.blit(table_image, (0,0))
 
+    #check, if any ball has been potted (each ball in every pocket)
+    for i, ball in enumerate(balls):
+        for pocket in pockets:
+            ball_x_dist = abs(ball.body.position[0] - pocket[0])
+            ball_y_dist = abs(ball.body.position[1] - pocket[1])
+            #distance between center of the ball and the pocket
+            ball_dist = math.sqrt((ball_x_dist ** 2)) + (ball_y_dist ** 2)
+            if ball_dist <= pocket_diameter / 2:
+                #check if the potted ball was the cue ball 
+                if i == len(balls) - 1:
+                    lives -= 1
+                    cue_ball_potted = True
+
+                    #remove the white ball 
+                    ball.body.position = (-100, -100)
+                    ball.body.velocity = (0.0, 0.0)
+
+                else:
+                    #remove the ball from the space 
+                    space.remove(ball.body)
+                    balls.remove(ball)
+                    potted_balls.append(ball_images[i])
+                    ball_images.pop(i)
+
+
     #draw pool balls (enumerate function can be used to also count the indexes)
     for i, ball in enumerate(balls):
                                     #position needed to be adapted: differences between pymunk and pygame
@@ -183,7 +238,11 @@ while run == True:
 
     #draw pool cue 
     #calculate pool cue angle 
-    if taking_shot == True: 
+    if taking_shot == True and game_running == True: 
+        if cue_ball_potted == True:
+            #reposition cue ball 
+            balls[-1].body.position = (888, SCREEN_HEIGHT / 2)
+            cue_ball_potted = False
         mouse_pos = pygame.mouse.get_pos()
         #center of the cue is set to the position of the cue ball 
         cue.rect.center = balls[-1].body.position
@@ -196,7 +255,7 @@ while run == True:
         cue.draw(screen)
 
     #power up pool cue 
-    if powering_up == True:
+    if powering_up == True and game_running == True:
         force += 100 * force_direction
         if force >= max_force or force <= 0:
             force_direction *= -1
@@ -213,6 +272,20 @@ while run == True:
         #reset the force 
         force = 0  
         force_direction = 1
+
+    #draw bottom panel 
+    pygame.draw.rect(screen, background_color, (0, SCREEN_HEIGHT, SCREEN_WIDTH, BOTTOM_PANEL))
+    draw_text("LIVES: " + str(lives), font, white_color, SCREEN_WIDTH -200, SCREEN_HEIGHT +10)
+
+    #draw potted balls in bottom panel 
+    for i, ball in enumerate(potted_balls):
+        screen.blit(ball, (10 + (i * 50), SCREEN_HEIGHT + 10))
+
+    #check for game over 
+    if lives <= 0:
+        draw_text("GAME OVER", large_font, white_color, SCREEN_WIDTH / 2 - 160, SCREEN_HEIGHT / 2)
+        game_running = False
+
 
     for event in pygame.event.get():
         #event when mouseclick, that the cueball (white) is moving
