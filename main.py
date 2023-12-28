@@ -1,17 +1,22 @@
-#########################################################  Libraries   ######################################################################
+#############################################################################################################################################
+#########################################################  LIBRARIES   ######################################################################
+#############################################################################################################################################
 import pygame
 import math
 import pymunk
-#to link the 2 libraries 
+#//to link the 2 libraries 
 import pymunk.pygame_util
-######################################################### /Libraries   ######################################################################
+#############################################################################################################################################
+######################################################### /LIBRARIES   ######################################################################
+#############################################################################################################################################
 
-
-#########################################################  Game-Setup   ######################################################################
+#############################################################################################################################################
+#########################################################  GAME-SETUP  ######################################################################
+#############################################################################################################################################
 #initialize the pygame (modules, environment)
 pygame.init()
 
-#sizes of the game 
+#sizes of the game
 SCREEN_WIDTH = 1200 
 SCREEN_HEIGHT = 678
 BOTTOM_PANEL = 50
@@ -20,7 +25,7 @@ BOTTOM_PANEL = 50
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT + BOTTOM_PANEL))
 pygame.display.set_caption("Pool Practicer")
 
-#pymunk space
+#declare a space from the pymunk library (main simulation space, were all objects are in)
 space = pymunk.Space()
 #static body doesnt move/act to forces applied to it (is applied on the screen, so it never moves (represents the table))
 static_body = space.static_body
@@ -44,7 +49,6 @@ cue_ball_potted = False
 potted_balls = []
 game_running = True
 
-
 #colors
 background_color = (50, 50, 50)
 green_color = (0, 255, 0)
@@ -52,9 +56,7 @@ white_color = (255, 255, 255)
 
 #fonts 
 font = pygame.font.SysFont("Lato", 40)
-
 large_font = pygame.font.SysFont("Lato", 60)
-
 
 #load images (.convert_alpha to make it look smoother)
 cue_image = pygame.image.load("images/cue.png").convert_alpha()
@@ -65,18 +67,19 @@ for i in range(1, 17):
     ball_image = pygame.image.load(f"images/ball_{i}.png").convert_alpha()
     ball_images.append(ball_image)
 
+#############################################################################################################################################
+#########################################################  /GAME-SETUP   ####################################################################
+#############################################################################################################################################
 
-#########################################################  /Game-Setup   ######################################################################
 
-
-
-#########################################################  Functions   ######################################################################
+#############################################################################################################################################
+#########################################################  FUNCTIONS   ######################################################################
+#############################################################################################################################################
 
 #function for outputting text onto the screen 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
-
 
 #function for creating balls 
 #pymunk objects consist of body and shape (body is the center, shape is the surrounding)
@@ -101,22 +104,24 @@ def create_ball(radius, position):
     space.add(pivot)
     return shape
 
-#setup game balls
+
+#setup game balls on the billiard table
 balls = []
 rows = 5
-#potting balls
+#potting the balls in a pyramid form 
 for col in range(5):
     for row in range(rows):
         pos = (250 + (col * (diameter+1)), 267 + (row * (diameter+1)) + (col * diameter / 2))
         new_ball = create_ball(diameter/2, pos)
         balls.append(new_ball)
     rows -= 1
-#cue ball 
+
+#place the cue ball on the right of the screen (starting position) 
 pos = (888, SCREEN_HEIGHT / 2)
 cue_ball = create_ball(diameter / 2, pos)
 balls.append(cue_ball)
 
-#create 6 pockets on the table
+#create 6 pockets on the table, where the balls need to be put in 
 pockets = [
   (55, 63),
   (592, 48),
@@ -126,7 +131,7 @@ pockets = [
   (1134, 616)
 ]
 
-#points that represent the corners of the cushions of the pool table
+#points that represent the corners of the cushions of the pool table (act as borders)
 cushions = [
   [(88, 56), (109, 77), (555, 77), (564, 56)],
   [(621, 56), (630, 77), (1081, 77), (1102, 56)],
@@ -136,7 +141,7 @@ cushions = [
   [(1143, 96), (1122, 117), (1122, 560), (1143, 581)]
 ]
 
-#function for creating curshions (take the parameters (diameters of cushion))
+#function for creating cushions (take the parameters (diameters of cushion))
 def create_cushion(poly_dims):
     #static, because the cushions are fixed and do not move around
     body = pymunk.Body(body_type = pymunk.Body.STATIC)
@@ -150,8 +155,7 @@ def create_cushion(poly_dims):
 for c in cushions:
     create_cushion(c)
 
-
-#create pool cue 
+#create a pool cue (in a class, cause also updated functions etc.) 
 class Cue():
     def __init__(self, pos):
         self.original_image = cue_image
@@ -172,18 +176,18 @@ class Cue():
 #balls[-1] to get the last item of the list (which is the cue ball)
 cue = Cue(balls[-1].body.position)
 
-
 #create powerbars to show how hard the cue ball will the hit
 power_bar = pygame.Surface((10, 20))
 power_bar.fill(green_color)
 
+#############################################################################################################################################
+#########################################################  /FUNCTIONS   ######################################################################
+#############################################################################################################################################
 
-#########################################################  /Functions   ######################################################################
 
-
-
-
+#############################################################################################################################################
 #########################################################  MAIN LOOP GAME   ######################################################################
+#############################################################################################################################################
 #game loop, so the screen stays displayed 
 run = True
 while run == True: 
@@ -222,7 +226,6 @@ while run == True:
                     potted_balls.append(ball_images[i])
                     ball_images.pop(i)
 
-
     #draw pool balls (enumerate function can be used to also count the indexes)
     for i, ball in enumerate(balls):
                                     #position needed to be adapted: differences between pymunk and pygame
@@ -234,7 +237,6 @@ while run == True:
         #make it integer to think about bugs: ball could move v=0.000001 m/s
         if int(ball.body.velocity[0]) != 0 or int(ball.body.velocity[1]) != 0:
             taking_shot = False
-
 
     #draw pool cue 
     #calculate pool cue angle 
